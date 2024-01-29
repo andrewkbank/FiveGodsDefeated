@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Melee Players Who Have Beaten a God</title>
+    <style>
+        .playertooltip {
+            display: none;
+            background: #C8C8C8;
+            margin-left: 28px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000;
+            width:100px;
+            height:20px;
+        }
+    </style>
+</head>
+<div id="container">
+    <div class = "playertooltip">player</div>
+</div>
+<script type="module">
+    import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+    // Declare the chart dimensions and margins.
+    const width = 1500;
+    const height = 800;
+    const marginTop = 50;
+    const marginRight = 20;
+    const marginBottom = 20;
+    const marginLeft = 40;
+
+    // Create a tooltip div
+    var tooltip = document.querySelectorAll('.playertooltip');
+
+    // Declare the x (horizontal position) scale.
+    const x = d3.scaleUtc()
+        .domain([new Date("2006-04-23"), new Date("2025-01-01")])
+        .range([marginLeft, width - marginRight]);
+
+    // Declare the y (vertical position) scale.
+    const y = d3.scaleLinear()
+        .domain([0, 5])
+        .range([height - marginBottom, marginTop]);
+
+    // Configure the y-axis to display only whole numbers
+    const yAxis = d3.axisLeft(y)
+        .ticks(5)
+        .tickFormat(d3.format("d"));
+        
+
+    // Create the SVG container.
+    const svg = d3.create("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    // Add the x-axis.
+    svg.append("g")
+        .attr("transform", `translate(0,${height - marginBottom})`)
+        .call(d3.axisBottom(x));
+
+    // Add the y-axis.
+    svg.append("g")
+        .attr("transform", `translate(${marginLeft},0)`)
+        .call(yAxis);
+
+    //Parse the data from the csv file:
+    const csvText = await d3.text("fivegodsdefeated.csv")
+
+    // Use d3.csvParseRows to convert CSV text into an array of rows
+    const rows = d3.csvParseRows(csvText);
+
+    // Extract data from rows
+    const data = rows.map(row => {
+        const item = row[0];
+        const pairs = row.slice(1); // Exclude the first element (item)
+        const pairsData = [];
+
+        // Parse each pair in the row
+        for (let i = 0; i < pairs.length; i++) {
+            //console.log(pairs[i]);
+            const parts = pairs[i].substring(1, pairs[i].length - 1).split(",");
+            pairsData.push({
+                value: i+1,
+                date: d3.utcDay.offset(new Date("2006-04-23"), +parts[0]),
+                god: parts[1].substring(2, parts[1].length - 1)
+            });
+        }
+
+        return {
+        name: item,
+        pairs: pairsData
+        };
+    });
+
+    //console.log(data); // Output the parsed data to the console
+
+
+    //plot the data
+    
+    data.forEach(dataEntry =>{
+        // Generate a random color for each line
+        const randomColor = getRandomColor();
+
+        // Create a line function to define the path
+        const line = d3.line()
+            .x(d => x(d.date))
+            .y(d => y(d.value));
+
+        // Create a group for each line
+        const lineGroup = svg.append("g");
+
+        // Append a path for each line
+        lineGroup.append("path")
+            .datum(dataEntry.pairs)
+            .attr("fill", "none")
+            .attr("stroke", randomColor)
+            .attr("stroke-width", 2)
+            .attr("d", line);
+
+        // Append circles for each data point
+        lineGroup.selectAll(".data-point")
+            .data(dataEntry.pairs)
+            .enter().append("circle")
+            .attr("class", "data-point")
+            .attr("cx", d => x(d.date))
+            .attr("cy", d => y(d.value))
+            .attr("r", 4) // Adjust the radius of the circle as needed
+            .attr("fill", randomColor);
+
+        // Append labels for each data point
+        const labels = lineGroup.selectAll(".point-label")
+            .data(dataEntry.pairs)
+            .enter().append("text")
+            .attr("class", "point-label")
+            .attr("x", d => x(d.date)+5)
+            .attr("y", d => y(d.value)-5)
+            .text(d => d.god)
+            .style("visibility", "hidden");
+
+        // Add event listeners for mouseover and mouseout
+        lineGroup.on("mouseover", function (event,d) {
+            // Show labels on mouseover
+            labels.style("visibility", "visible");
+            lineGroup.raise();
+            // Show tooltip with name next to cursor
+            for (var i=tooltip.length; i--;) {
+                tooltip[i].style.left = event.pageX + 'px';
+                tooltip[i].style.top = event.pageY + 'px';
+                tooltip[i].textContent=dataEntry.name;
+                tooltip[i].style.display="inline-block";
+            }
+        }).on("mouseout", function () {
+            // Hide labels on mouseout
+            labels.style("visibility", "hidden");
+            for(var i = tooltip.length;i--;){
+                tooltip[i].style.display="none";
+            }
+        });
+    });
+    // Add x and y axes
+    svg.append("g")
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(yAxis)
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll(".tick line").clone()
+          .attr("x2", width - marginLeft - marginRight)
+          .attr("stroke-opacity", 0.1))
+      .call(g => g.append("text")
+          .attr("x", -marginLeft)
+          .attr("y", 10)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+          .text("Gods Defeated"));
+
+    svg.append("text") // Graph title
+        .attr("x", width / 2)
+        .attr("y", 20)
+        .attr("text-anchor", "middle")
+        .style("font-size", "20px")
+        .text("All Melee Players Who Have Beaten a God");
+
+    // Function to generate a random color
+    function getRandomColor() {
+        const letters = "0123456789ABCDEF";
+        let color = "#";
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    // Append the SVG element.
+    container.append(svg.node());
+</script>
