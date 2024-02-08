@@ -101,11 +101,21 @@
 
 
     //plot the data
-    
+    let index = 0;
+    let index2 = 0;
     data.forEach(dataEntry =>{
         // Generate a random color for each line
-        const randomColor = getRandomColor();
-
+        //console.log(dataEntry);
+        let color = getGreyscaleColor(dataEntry.pairs.length);
+        
+        if(dataEntry.pairs.length>1){
+            color = colorblind(index);//getGreyscaleColor(dataEntry.pairs.length);//getRandomColor();
+            ++index;
+        }else{
+            color = colorblind(index2);//getGreyscaleColor(dataEntry.pairs.length);//getRandomColor();
+            ++index2;
+        }
+        
         // Create a line function to define the path
         const line = d3.line()
             .x(d => x(d.date))
@@ -115,10 +125,10 @@
         const lineGroup = svg.append("g");
 
         // Append a path for each line
-        lineGroup.append("path")
+        const path = lineGroup.append("path")
             .datum(dataEntry.pairs)
             .attr("fill", "none")
-            .attr("stroke", randomColor)
+            .attr("stroke", color)
             .attr("stroke-width", 2)
             .attr("d", line);
 
@@ -130,7 +140,7 @@
             .attr("cx", d => x(d.date))
             .attr("cy", d => y(d.value))
             .attr("r", 4) // Adjust the radius of the circle as needed
-            .attr("fill", randomColor);
+            .attr("fill", color);
 
         // Append labels for each data point
         const labels = lineGroup.selectAll(".point-label")
@@ -141,7 +151,16 @@
             .attr("y", d => y(d.value)-5)
             .text(d => d.god)
             .style("visibility", "hidden");
-
+        ///*
+        // Append an invisible rectangle as an overlay for mouse events
+        const overlay = lineGroup.append("path")
+            .datum(dataEntry.pairs)
+            .attr("fill", "none")
+            .attr("opacity", 0) // Make the overlay invisible
+            .attr("stroke", color)
+            .attr("stroke-width", 20)
+            .attr("d", line)
+        //*/
         // Add event listeners for mouseover and mouseout
         lineGroup.on("mouseover", function (event,d) {
             // Show labels on mouseover
@@ -154,12 +173,14 @@
                 tooltip[i].textContent=dataEntry.name;
                 tooltip[i].style.display="inline-block";
             }
+            overlay.attr("opacity",0.2);
         }).on("mouseout", function () {
             // Hide labels on mouseout
             labels.style("visibility", "hidden");
             for(var i = tooltip.length;i--;){
                 tooltip[i].style.display="none";
             }
+            overlay.attr("opacity",0);
         });
     });
     // Add x and y axes
@@ -194,6 +215,211 @@
         return color;
     }
 
+    function getGreyscaleColor(godsSlain){
+        if(godsSlain==1){
+            return "#ffffff";
+        }
+        if(godsSlain==2){
+            return "#cccccc";
+        }
+        if(godsSlain==3){
+            return "#999999";
+        }
+        if(godsSlain==4){
+            return "#666666";
+        }
+        if(godsSlain==5){
+            return "#333333";
+        }
+        return "#000000";
+    }
+
+    function getColorBrewerColor(index){
+        if(index%12==0){
+            return "#a6cee3";
+        }
+        if(index%12==1){
+            return "#1f78b4";
+        }
+        if(index%12==2){
+            return "#b2df8a";
+        }
+        if(index%12==3){
+            return "#33a02c";
+        }
+        if(index%12==4){
+            return "#fb9a99";
+        }
+        if(index%12==5){
+            return "#e31a1c";
+        }
+        if(index%12==6){
+            return "#fdbf6f";
+        }
+        if(index%12==7){
+            return "#ff7f00";
+        }
+        if(index%12==8){
+            return "#cab2d6";
+        }
+        if(index%12==9){
+            return "#6a3d9a";
+        }
+        if(index%12==10){
+            return "#ffff99";
+        }
+        if(index%12==11){
+            return "#b15928";
+        }
+        return "#000000";
+    }
+    function getColorBrewerColor2(index){
+        if(index%12==0){
+            return "#8dd3c7";
+        }
+        if(index%12==1){
+            return "#ffffb3";
+        }
+        if(index%12==2){
+            return "#bebada";
+        }
+        if(index%12==3){
+            return "#fb8072";
+        }
+        if(index%12==4){
+            return "#80b1d3";
+        }
+        if(index%12==5){
+            return "#fdb462";
+        }
+        if(index%12==6){
+            return "#b3de69";
+        }
+        if(index%12==7){
+            return "#fccde5";
+        }
+        if(index%12==8){
+            return "#d9d9d9";
+        }
+        if(index%12==9){
+            return "#bc80bd";
+        }
+        if(index%12==10){
+            return "#ccebc5";
+        }
+        if(index%12==11){
+            return "#ffed6f";
+        }
+        return "#000000";
+    }
+    function getAdobeColor(index){
+        if(index%20==0){
+            return "#FFBC00";
+        }
+        if(index%20==1){
+            return "#C1F400";
+        }
+        if(index%20==2){
+            return "#2F00AD";
+        }
+        if(index%20==3){
+            return "#BD4600";
+        }
+        if(index%20==4){
+            return "#00E5F0";
+        }
+        if(index%20==5){
+            return "#010D80";
+        }
+        if(index%20==6){
+            return "#0055BD";
+        }
+        if(index%20==7){
+            return "#D12000";
+        }
+        if(index%20==8){
+            return "#F00047";
+        }
+        if(index%20==9){
+            return "#80CCC0";
+        }
+        if(index%20==10){
+            return "#00FA1E";
+        }
+        if(index%20==11){
+            return "#006B55";
+        }
+        if(index%20==12){
+            return "#C2AD00";
+        }
+        if(index%20==13){
+            return "#005270";
+        }
+        if(index%20==14){
+            return "#47D600";
+        }
+        if(index%20==15){
+            return "#46006C";
+        }
+        if(index%20==16){
+            return "#BB83C2";
+        }
+        if(index%20==17){
+            return "#8F008B";
+        }
+        if(index%20==18){
+            return "#F08A00";
+        }
+        return "#01F578";
+    }
+    function colorblind(index){
+        if(index%15==0){
+            return "#0B00EF";
+        }
+        if(index%15==1){
+            return "#00B7F0";
+        }
+        if(index%15==2){
+            return "#9E6CF0";
+        }
+        if(index%15==3){
+            return "#73AD5C";
+        }
+        if(index%15==4){
+            return "#00613B";
+        }
+        if(index%15==5){
+            return "#A85EB8";
+        }
+        if(index%15==6){
+            return "#473413";
+        }
+        if(index%15==7){
+            return "#C4EB6A";
+        }
+        if(index%15==8){
+            return "#D7029F";
+        }
+        if(index%15==9){
+            return "#F5B179";
+        }
+        if(index%15==10){
+            return "#A32B33";
+        }
+        if(index%15==11){
+            return "#7390B2";
+        }
+        if(index%15==12){
+            return "#008480";
+        }
+        if(index%15==13){
+            return "#00E635";
+        }
+        if(index%15==14){
+            return "#E65129";
+        }
+        return "#000000";
+    }
     // Append the SVG element.
     container.append(svg.node());
 </script>
