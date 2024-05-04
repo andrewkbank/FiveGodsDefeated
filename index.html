@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>All Melee Players Who Have Beaten a God</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+        }
+
+        svg {
+            display: block;
+            margin: auto;
+            background-color: black; /* Set the background color to black */
+            color: white;
+        }
         .playertooltip {
             display: none;
             background: #C8C8C8;
@@ -14,6 +27,9 @@
             z-index: 1000;
             width:100px;
             height:20px;
+        }
+        .point-label{
+            fill: white;
         }
     </style>
 </head>
@@ -48,7 +64,7 @@
         .range([height - marginBottom, marginTop]);
 
     // Configure the y-axis to display only whole numbers
-    const yAxis = d3.axisLeft(y)
+    const yAxis = d3.axisLeft(y)    
         .ticks(5)
         .tickFormat(d3.format("d"));
         
@@ -173,7 +189,7 @@
                 tooltip[i].textContent=dataEntry.name;
                 tooltip[i].style.display="inline-block";
             }
-            overlay.attr("opacity",0.2);
+            overlay.attr("opacity",0.4);
         }).on("mouseout", function () {
             // Hide labels on mouseout
             labels.style("visibility", "hidden");
@@ -392,7 +408,7 @@
             return "#A85EB8";
         }
         if(index%15==6){
-            return "#473413";
+            return "#675433";
         }
         if(index%15==7){
             return "#C4EB6A";
